@@ -11,17 +11,15 @@ var fs = require('fs')
 var d = new Date()
 
 var file_data = d
-
+var fxrData
 const update_interval_hours = 1
 const update_interval_mili = update_interval_hours * 3600000
 
-// console.log(delta.Country())
-// var us = delta.Country('united states', 'USD')
+
 var usd = lambda.Currency('USD', 'united states')
-// console.log(us)
+
 console.log(usd)
-// console.log(us)
-// console.log(us.name)
+
 
 /*
 This is a promise to write fixer.io currency exchange data out to a local file.
@@ -109,13 +107,33 @@ var check_file_expiration = new Promise(function(resolve, reject){
 
 check_file_expiration.then(function(result){
   file_data = result
-  console.log('data : \n' + file_data)
+  console.log('data : \n' + file_data.length)
+  let start_index
+  let read = false
+  let output = ''
+  for (i in file_data){
+    if (file_data[i] == '{') {
+      start_index=i;
+      read = true
+      // break
+    }
+
+    if (read) {
+      output+=file_data[i]
+    }
+    // console.log(file_data[i])
+  }
+  console.log(output)
+  // for (var i = start_index; i < file_data.length-start_index; i++) {
+  //
+  // }
+  // console.log('done')
 })
 
 
 
 
-var fxrData
+
 
 
 // var unitedStates = new delta.Country()
