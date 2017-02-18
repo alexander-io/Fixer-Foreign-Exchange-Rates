@@ -73,7 +73,7 @@ var check_file_expiration = new Promise(function(resolve, reject){
             // otherwise it worked
             console.log('It\'s saved!');
           });
-          resolve(data)
+          resolve(parseFile(data))
         })
       }
     } else { // else, error didn't occur...
@@ -92,25 +92,26 @@ var check_file_expiration = new Promise(function(resolve, reject){
             if (err) throw err;
             console.log('It\'s saved!');
           });
-          resolve(data)
+          resolve(parseFile(data))
         })
       } else { // else, it is not time for an update
         console.log('no update needed')
         // calculate the time remaining until update
         let seconds_remaining = parseInt(data) - (d.getTime()-update_interval_mili)
         console.log('next update needed in : ' + Number((seconds_remaining/1000)/60).toFixed(4) + ' minutes')
-        resolve(data)
+        resolve(parseFile(data))
       }
     }
   });
 })
 
-check_file_expiration.then(function(result){
-  file_data = result
-  console.log('data : \n' + file_data.length)
+
+// parse out the json data from the file, exclude the time stamp
+function parseFile(file_data){
+  let s = ''
   let start_index
   let read = false
-  let output = ''
+  // let output = ''
   for (i in file_data){
     if (file_data[i] == '{') {
       start_index=i;
@@ -119,11 +120,35 @@ check_file_expiration.then(function(result){
     }
 
     if (read) {
-      output+=file_data[i]
+      s+=file_data[i]
     }
     // console.log(file_data[i])
   }
-  console.log(output)
+  return s
+}
+
+
+
+check_file_expiration.then(function(result){
+  file_data = result
+  console.log(file_data)
+  // console.log('data : \n' + file_data.length)
+  // let start_index
+  // let read = false
+  // let output = ''
+  // for (i in file_data){
+  //   if (file_data[i] == '{') {
+  //     start_index=i;
+  //     read = true
+  //     // break
+  //   }
+  //
+  //   if (read) {
+  //     output+=file_data[i]
+  //   }
+  //   // console.log(file_data[i])
+  // }
+  // console.log(output)
   // for (var i = start_index; i < file_data.length-start_index; i++) {
   //
   // }
