@@ -15,11 +15,9 @@ var bitCoinData
 const update_interval_hours = 1
 const update_interval_mili = update_interval_hours * 3600000
 
-
 var usd = lambda.Currency('USD', 'united states', [1, 5, 10, 20, 50, 100])
 
 console.log(usd)
-
 
 /*
 This is a promise to write fixer.io currency exchange data out to a local file.
@@ -71,7 +69,7 @@ var check_file_expiration = new Promise(function(resolve, reject){
             // if error writing, throw
             if (err) throw err;
             // otherwise it worked
-            console.log('It\'s saved!');
+            console.log('\ndata successfully written out to file!');
           });
           resolve(parseFile(data))
         })
@@ -81,7 +79,7 @@ var check_file_expiration = new Promise(function(resolve, reject){
       if (d.getTime() - update_interval_mili > parseInt(data)){
         // the time elapsed since the last update has surpassed the update_interval_period
         // so our file needs an update
-        console.log('file needs update')
+        console.log('\nfile needs data update from remote server\nfetching...')
         // build string to write to file
         let update_string = d.getTime().toString() + '\n'
         // go get fixer data from api
@@ -90,7 +88,7 @@ var check_file_expiration = new Promise(function(resolve, reject){
           update_string += result
           fs.writeFile('./etc/file.txt', update_string, (err) => {
             if (err) throw err;
-            console.log('It\'s saved!');
+            console.log('\ndata successfully written out to file!');
           });
           resolve(parseFile(data))
         })
@@ -105,15 +103,37 @@ var check_file_expiration = new Promise(function(resolve, reject){
   });
 })
 
+/*
+this is a promise to retrieve the latest fixer.io data with US as base for currency conversion
+*/
+var getFixerData = new Promise(function(resolve, reject){
+  request('http://api.fixer.io/latest?base=USD', function(error, response, json){
+    if (!error && response.statusCode == 200){
+      resolve(json)
+    }
+  })
+})
+
+/*
+this is a promise to retrieve the latest bitcoin currency value data from blockchain.info
+*/
+var getBitCoinData = new Promise(function(resolve, reject){
+  request('https://blockchain.info/ticker', function(error, response, json){
+    if (!error && response.statusCode == 200){
+      resolve(json)
+    }
+  })
+})
+
 // parse out the json data from the file, exclude the time stamp
 function parseFile(file_data){
   let s = ''
-  let start_index
+  // let start_index
   let read = false
   // find the index correspondding to the start of the json data
   for (i in file_data){
     if (file_data[i] == '{') {
-      start_index=i;
+      // start_index=i;
       read = true
     }
 
@@ -124,7 +144,6 @@ function parseFile(file_data){
   return s
 }
 
-
 // first check file & result data if needed,
 check_file_expiration.then(function(result){
   file_data = result
@@ -132,50 +151,4 @@ check_file_expiration.then(function(result){
   let json_data = JSON.parse(file_data)
 
   console.log(json_data)
-
 })
-
-
-
-
-
-var getFixerData = new Promise(function(resolve, reject){
-
-  request('http://api.fixer.io/latest?base=USD', function(error, response, json){
-    if (!error && response.statusCode == 200){
-      resolve(json)
-    }
-  })
-})
-
-var getBitCoinData = new Promise(function(resolve, reject){
-  // request('https://blockchain.info/tobtc?currency=USD&value=500', function(error, response, json){
-  request('https://blockchain.info/ticker', function(error, response, json){
-    if (!error && response.statusCode == 200){
-      resolve(json)
-    }
-  })
-})
-
-// call getFixerData
-// getFixerData.then(function(result){
-//   // convert the string to JSON format
-//   fxrData = JSON.parse(result)
-//   console.log(fxrData.rates)
-//
-//   // var usdNotes = [1, 5, 10, 20, 50, 100]
-//   // var unitedStatesDollar = new Currency('USD', 'United States', usdNotes)
-//   // var japaneseYen = new Currency('JPY', 'Japan')
-//   // unitedStatesDollar.compareCurrencyTo(japaneseYen)
-//   // var canadianDollar = new Currency('CAD', 'Canada')
-//   // var greatBritishPound = new Currency('GBP', 'Britian')
-//   // canadianDollar.compareCurrencyTo(greatBritishPound)
-//   // greatBritishPound.compareCurrencyTo(canadianDollar)
-//
-//
-//   // getBitCoinData.then(function(result){
-//   //   bitCoinData = JSON.parse(result)
-//   //   // console.log(bitCoinData)
-//   // })
-//
-// })
