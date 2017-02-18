@@ -1,22 +1,22 @@
-// var $ = require('jquery')
+// include, import, require (what have you)
 var delta = require('./country.js')
 var lambda = require('./currency.js')
-// var delta = require('def')
-var $ = require('./jq.js')
 var fx = require('money')
 var request = require('request')
 var fs = require('fs')
-// console.log('delta', delta)
 
+// this is a sign
 var d = new Date()
 
-var file_data = d
+// declare variables that are used to store the fetched fixer.io and bitcoin exchange rate data
 var fxrData
+var bitCoinData
+
 const update_interval_hours = 1
 const update_interval_mili = update_interval_hours * 3600000
 
 
-var usd = lambda.Currency('USD', 'united states')
+var usd = lambda.Currency('USD', 'united states', [1, 5, 10, 20, 50, 100])
 
 console.log(usd)
 
@@ -95,75 +95,50 @@ var check_file_expiration = new Promise(function(resolve, reject){
           resolve(parseFile(data))
         })
       } else { // else, it is not time for an update
-        console.log('no update needed')
+        console.log('\nthe last update was recent enough... \nno update currently needed...')
         // calculate the time remaining until update
         let seconds_remaining = parseInt(data) - (d.getTime()-update_interval_mili)
-        console.log('next update needed in : ' + Number((seconds_remaining/1000)/60).toFixed(4) + ' minutes')
+        console.log('next update needed in : ' + Number((seconds_remaining/1000)/60).toFixed(4) + ' minutes\n')
         resolve(parseFile(data))
       }
     }
   });
 })
 
-
 // parse out the json data from the file, exclude the time stamp
 function parseFile(file_data){
   let s = ''
   let start_index
   let read = false
-  // let output = ''
+  // find the index correspondding to the start of the json data
   for (i in file_data){
     if (file_data[i] == '{') {
       start_index=i;
       read = true
-      // break
     }
 
     if (read) {
       s+=file_data[i]
     }
-    // console.log(file_data[i])
   }
   return s
 }
 
 
-
+// first check file & result data if needed,
 check_file_expiration.then(function(result){
   file_data = result
-  console.log(file_data)
-  // console.log('data : \n' + file_data.length)
-  // let start_index
-  // let read = false
-  // let output = ''
-  // for (i in file_data){
-  //   if (file_data[i] == '{') {
-  //     start_index=i;
-  //     read = true
-  //     // break
-  //   }
-  //
-  //   if (read) {
-  //     output+=file_data[i]
-  //   }
-  //   // console.log(file_data[i])
-  // }
-  // console.log(output)
-  // for (var i = start_index; i < file_data.length-start_index; i++) {
-  //
-  // }
-  // console.log('done')
+  // console.log(file_data)
+  let json_data = JSON.parse(file_data)
+
+  console.log(json_data)
+
 })
 
 
 
 
 
-
-
-// var unitedStates = new delta.Country()
-
-var bitCoinData
 var getFixerData = new Promise(function(resolve, reject){
 
   request('http://api.fixer.io/latest?base=USD', function(error, response, json){
